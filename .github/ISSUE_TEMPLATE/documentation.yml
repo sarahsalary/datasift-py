@@ -1,0 +1,35 @@
+name: 📖 Documentation Issue
+description: Report a problem with the documentation
+title: "[Docs]: "
+labels: ["documentation", "triage"]
+
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Affected page
+      placeholder: "https://YOUR_USERNAME.github.io/datasift-py/streaming/"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type of issue
+      options:
+        - Typo or grammar
+        - Incorrect information
+        - Missing information
+        - Unclear explanation
+        - Broken link
+        - Missing example
+        - Outdated content
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true

@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datasift-py"
+version = "0.4.1"
+description = "Python-native fluent API for data conversion, querying, manipulation, and validation. Zero dependencies."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "sarahsalary", email = "saraasaalari@yahoo.com" }
+]
+keywords = ["json", "yaml", "toml", "csv", "xml", "jsonl", "converter", "query", "filter", "fluent", "data", "streaming", "schema", "validation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "typing_extensions>=4.0; python_version < '3.12'",
+]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
+
+[project.scripts]
+datasift = "datasift.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/sarahsalary/datasift-py"
+Repository = "https://github.com/sarahsalary/datasift-py"
+Issues = "https://github.com/sarahsalary/datasift-py/issues"
+Documentation = "https://sarahsalary.github.io/datasift-py/"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

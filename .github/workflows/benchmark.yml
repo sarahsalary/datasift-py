@@ -1,0 +1,122 @@
+name: Benchmark
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "benchmarks/**"
+      - ".github/workflows/benchmark.yml"
+      - "pyproject.toml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: benchmark-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Run benchmarks and comment on PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Generate benchmark data
+        run: |
+          python -m benchmarks.generate_data \
+            --rows 500000 \
+            --out /tmp/datasift-bench
+
+      - name: Run benchmark on PR
+        id: bench_pr
+        run: |
+          python -m benchmarks.bench_data_vs_stream \
+            --data-dir /tmp/datasift-bench \
+            --rows 500000 \
+            --json /tmp/bench-pr.json \
+            --markdown /tmp/bench-pr.md
+        continue-on-error: true
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          clean: false
+          path: base
+
+      - name: Install base branch
+        run: |
+          cd base
+          pip install -e ".[dev]"
+
+      - name: Generate base benchmark data
+        run: |
+          cd base
+          python -m benchmarks.generate_data \
+            --rows 500000 \
+            --out /tmp/datasift-bench-base
+
+      - name: Run benchmark on base
+        id: bench_base
+        run: |
+          cd base
+          python -m benchmarks.bench_data_vs_stream \
+            --data-dir /tmp/datasift-bench-base \
+            --rows 500000 \
+            --json /tmp/bench-base.json \
+            --markdown /tmp/bench-base.md
+        continue-on-error: true
+
+      - name: Generate PR comment
+        if: always()
+        run: |
+          python .github/scripts/format_benchmark_comment.py \
+            --pr-json /tmp/bench-pr.json \
+            --base-json /tmp/bench-base.json \
+            --output /tmp/comment.md \
+            --pr-number ${{ github.event.pull_request.number }} \
+            --threshold 25
+
+      - name: Find existing benchmark comment
+        id: find-comment
+        if: always()
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- datasift-benchmark -->"
+
+      - name: Post or update benchmark comment
+        if: always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body-path: /tmp/comment.md
+
+      - name: Check regression threshold
+        if: always()
+        run: |
+          python .github/scripts/check_regression.py \
+            --pr-json /tmp/bench-pr.json \
+            --base-json /tmp/bench-base.json \
+            --threshold 25

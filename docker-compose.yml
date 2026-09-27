@@ -1,0 +1,27 @@
+services:
+  shell:
+    build: {context: ., dockerfile: Dockerfile, target: runtime}
+    image: datasift-py:dev
+    volumes: [".:/workspace"]
+    working_dir: /workspace
+    command: ["/bin/bash"]
+    entrypoint: []
+    stdin_open: true
+    tty: true
+
+  test:
+    build: {context: ., dockerfile: Dockerfile, target: runtime}
+    image: datasift-py:dev
+    volumes: [".:/workspace"]
+    working_dir: /workspace
+    command: ["pytest", "-q"]
+    entrypoint: []
+
+  lint:
+    extends: {service: test}
+    command: ["ruff", "check", "src/datasift", "tests"]
+
+  docs:
+    extends: {service: test}
+    ports: ["8000:8000"]
+    command: ["mkdocs", "serve", "--dev-addr=0.0.0.0:8000"]

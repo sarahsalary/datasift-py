@@ -1,0 +1,27 @@
+name: ❓ Question
+description: Ask a question about using datasift-py
+title: "[Question]: "
+labels: ["question"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **Before opening a question issue**, please consider
+        [GitHub Discussions](https://github.com/YOUR_USERNAME/datasift-py/discussions)
+        — you'll get faster answers there.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      render: python
+    validations:
+      required: false
