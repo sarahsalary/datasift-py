@@ -288,7 +288,7 @@ def _validate_tuple(value: Any, args: Tuple[Any, ...], path: str, errors: List[S
             SchemaError(path, f"expected tuple of length {len(args)}, got {len(value)}", value)
         )
         return
-    for i, (item, item_type) in enumerate(zip(value, args)):
+    for i, (item, item_type) in enumerate(zip(value, args, strict=False)):
         _validate(item, item_type, f"{path}[{i}]", errors)
 
 
